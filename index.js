@@ -155,6 +155,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
   let end = opts.end || new Date();
   let freq = opts.freq || 30;
   let clocArgs = opts.clocArgs || [];
+  let branch = opts.branch || 'master';
 
   let current = start;
   let dates = [];
@@ -168,7 +169,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
 
   let periods = [];
 
-  await checkout(cwd, 'master');
+  await checkout(cwd, branch);
 
   let prevCommit;
 
@@ -198,7 +199,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
     allResults.push({ date: period.date, commit: period.commit, results });
   }
 
-  await checkout(cwd, 'master');
+  await checkout(cwd, branch);
   console.log();
 
   console.log(chalk.cyan('Results:'));
