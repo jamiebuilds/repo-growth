@@ -63,3 +63,11 @@ repo-growth --end 2018-01
 ```sh
 repo-growth --freq 7
 ```
+
+#### `--branch`, `-b`
+
+**Default: "master"**
+
+```sh
+repo-growth --branch production
+```
