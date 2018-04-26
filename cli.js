@@ -17,6 +17,7 @@ const cli = meow({
       --start, -s <date>      Start Date
       --end, -e <date>        End Date
       --freq, -f <days>       Frequency (in days)
+      --reverse-dates, -r     Outputs dates in the wrong order (DD-MM-YYY), does not affect input dates
       --json                  Output JSON
 
     Examples
@@ -24,7 +25,7 @@ const cli = meow({
       $ repo-growth -s 2017-01 -e 2018-01 -f 365
 
     Dates
-      Dates should be formatted YYYY-MM
+      Input Dates should be formatted YYYY-MM
   `,
   flags: {
     start: {
@@ -38,6 +39,10 @@ const cli = meow({
     freq: {
       type: 'number',
       alias: 'f'
+    },
+    reverseDates: {
+      type: 'boolean',
+      alias: 'r'
     },
     '--': true
   },
@@ -65,6 +70,7 @@ opts.cwd = process.cwd();
 if (cli.flags.start) opts.start = toDate(cli.flags.start);
 if (cli.flags.end) opts.end = toDate(cli.flags.end);
 if (cli.flags.freq) opts.freq = cli.flags.freq;
+if (cli.flags.reverseDates) opts.reverseDates = cli.flags.reverseDates;
 if (cli.flags['--']) opts.clocArgs = cli.flags['--'];
 
 repoGrowth(opts).then(() => {

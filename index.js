@@ -28,11 +28,11 @@ async function getFirstCommitDate(cwd /*: string */) {
   return new Date(res.stdout.toString().trim());
 }
 
-function formatGitDate(date /*: Date */) {
+function formatGitDate(date /*: Date */, opts /*: { reverseDates?: boolean  } */ = {} ) {
   let year = String(date.getFullYear());
   let month = String(date.getMonth() + 1).padStart(2, '0');
   let day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return opts.reverseDates ? `${day}-${month}-${year}`: `${year}-${month}-${day}`;
 }
 
 
@@ -117,14 +117,14 @@ function periodToTable(results) {
   return table;
 }
 
-function allPeriodsToTable(allPeriods) {
+function allPeriodsToTable(allPeriods, opts /*: { reverseDates?: boolean  } */ = {}) {
   let table = new Table({
     head: ['Period', 'Total Files', 'Total LoC'],
   });
 
   for (let period of allPeriods) {
     table.push([
-      `${chalk.magenta(formatGitDate(period.date))} ${chalk.yellow(period.commit.slice(-8))}`,
+      `${chalk.magenta(formatGitDate(period.date, opts))} ${chalk.yellow(period.commit.slice(-8))}`,
       String(period.results.SUM.nFiles),
       String(period.results.SUM.code)
     ]);
@@ -145,6 +145,7 @@ export type Opts = {
   start?: Date,
   end?: Date,
   freq?: number,
+  reverseDates?: boolean,
   clocArgs?: Array<string>,
 };
 */
@@ -154,6 +155,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
   let start = opts.start || await getFirstCommitDate(cwd);
   let end = opts.end || new Date();
   let freq = opts.freq || 30;
+  let reverseDates = opts.reverseDates || false;
   let clocArgs = opts.clocArgs || [];
 
   let current = start;
@@ -183,7 +185,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
   console.log(chalk.cyan('Matched Commits:'));
   console.log();
   for (let period of periods) {
-    console.log(`${chalk.magenta(formatGitDate(period.date))} ${chalk.yellow(period.commit)}`)
+    console.log(`${chalk.magenta(formatGitDate(period.date, { reverseDates }))} ${chalk.yellow(period.commit)}`)
   }
   console.log();
 
@@ -203,7 +205,7 @@ async function repoGrowth(opts /*: Opts */ = {}) {
 
   console.log(chalk.cyan('Results:'));
   console.log();
-  console.log(allPeriodsToTable(allResults).toString());
+  console.log(allPeriodsToTable(allResults, { reverseDates }).toString());
   console.log();
 
   return allResults;
