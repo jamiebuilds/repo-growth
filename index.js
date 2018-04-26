@@ -5,9 +5,10 @@ const chalk /*: any */ = require('chalk');
 const path = require('path');
 const Table = require('cli-table');
 const BIN_DIR = path.join(__dirname, 'node_modules', '.bin');
+const ENV_PATH = process.env.PATH || ''
 
 const ENV = Object.assign({}, process.env, {
-  PATH: [BIN_DIR].concat(process.env.PATH)
+  PATH: `${BIN_DIR}:${ENV_PATH}`
 });
 
 async function getFirstCommitDate(cwd /*: string */) {
