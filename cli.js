@@ -18,10 +18,12 @@ const cli = meow({
       --end, -e <date>        End Date
       --freq, -f <days>       Frequency (in days)
       --json                  Output JSON
+      --branch, -b <branch>   Select the branch used
 
     Examples
       $ repo-growth
       $ repo-growth -s 2017-01 -e 2018-01 -f 365
+      $ repo-growth --branch production
 
     Dates
       Dates should be formatted YYYY-MM
@@ -38,6 +40,10 @@ const cli = meow({
     freq: {
       type: 'number',
       alias: 'f'
+    },
+    branch: {
+      type: 'string',
+      alias: 'b'
     },
     '--': true
   },
@@ -65,6 +71,7 @@ opts.cwd = process.cwd();
 if (cli.flags.start) opts.start = toDate(cli.flags.start);
 if (cli.flags.end) opts.end = toDate(cli.flags.end);
 if (cli.flags.freq) opts.freq = cli.flags.freq;
+if (cli.flags.branch) opts.branch = cli.flags.branch;
 if (cli.flags['--']) opts.clocArgs = cli.flags['--'];
 
 repoGrowth(opts).then(() => {
