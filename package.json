@@ -1,0 +1,21 @@
+{
+  "name": "repo-growth",
+  "version": "0.0.0",
+  "description": "Measure how fast your repo is growing using cloc",
+  "main": "index.js",
+  "bin": "cli.js",
+  "repository": "https://github.com/jamiebuilds/repo-growth",
+  "author": "Jamie Kyle <me@thejameskyle.com>",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.4.0",
+    "cli-table": "^0.3.1",
+    "cloc": "^2.3.3",
+    "meow": "^5.0.0",
+    "spawndamnit": "^2.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "flow-bin": "^0.70.0"
+  }
+}
