@@ -1,6 +1,6 @@
 {
   "name": "repo-growth",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Measure how fast your repo is growing using cloc",
   "main": "index.js",
   "bin": "cli.js",
