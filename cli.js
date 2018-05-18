@@ -14,21 +14,27 @@ const cli = meow({
     $ repo-growth <...flags> [-- <...cloc flags>]
 
     Flags
-      --start, -s <date>      Start Date
-      --end, -e <date>        End Date
-      --freq, -f <days>       Frequency (in days)
-      --json                  Output JSON
-      --branch, -b <branch>   Select the branch used
+      --match, -m <file regex>  Match files/dirs using regex
+      --start, -s <date>        Start Date
+      --end, -e <date>          End Date
+      --freq, -f <days>         Frequency (in days)
+      --json                    Output JSON
+      --branch, -b <branch>     Select the branch used
 
     Examples
       $ repo-growth
       $ repo-growth -s 2017-01 -e 2018-01 -f 365
       $ repo-growth --branch production
+      $ repo-growth --match 'packages/.*/src/.*'
 
     Dates
       Dates should be formatted YYYY-MM
   `,
   flags: {
+    match: {
+      type: 'string',
+      alias: 'm'
+    },
     start: {
       type: 'string',
       alias: 's'
@@ -68,6 +74,7 @@ function toDate(dateStr) {
 
 let opts /*: Opts */ = {};
 opts.cwd = process.cwd();
+if (cli.flags.match) opts.match = cli.flags.match;
 if (cli.flags.start) opts.start = toDate(cli.flags.start);
 if (cli.flags.end) opts.end = toDate(cli.flags.end);
 if (cli.flags.freq) opts.freq = cli.flags.freq;

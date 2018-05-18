@@ -4,6 +4,7 @@ const spawn = require('spawndamnit');
 const chalk /*: any */ = require('chalk');
 const path = require('path');
 const Table = require('cli-table');
+const parseJson = require('parse-json');
 const BIN_DIR = path.join(__dirname, 'node_modules', '.bin');
 const ENV_PATH = process.env.PATH || ''
 
@@ -68,13 +69,13 @@ async function checkout(cwd /*: string */, ref /*: string */) {
   }
 }
 
-async function countLinesOfCode(cwd /*: string */, clocArgs /*: Array<string> */) /*: Object */ {
+async function countLinesOfCode(cwd /*: string */, clocArgs /*: Array<string> */, match /*: string */) /*: Object | null */ {
   console.log(chalk.cyan(`Counting lines of code...`));
   console.log();
   let res = await spawn('cloc', clocArgs.concat([
     '--json',
     '--vcs=git',
-    '.',
+    match,
   ]), {
     cwd: cwd,
     env: ENV,
@@ -84,7 +85,13 @@ async function countLinesOfCode(cwd /*: string */, clocArgs /*: Array<string> */
     throw new Error(res.stderr.toString());
   }
 
-  return JSON.parse(res.stdout.toString());
+  let stdout = res.stdout.toString();
+
+  if (stdout === '') {
+    return null;
+  }
+
+  return parseJson(res.stdout.toString());
 }
 
 function periodToTable(results) {
@@ -117,18 +124,29 @@ function periodToTable(results) {
   return table;
 }
 
+function formatValue(curr, prev) {
+  if (prev) {
+    let diff = curr - prev;
+    let sign = diff < 0 ? '-' : '+';
+    return `${curr} (${sign}${Math.abs(diff)})`;
+  } else {
+    return `${curr}`;
+  }
+}
+
 function allPeriodsToTable(allPeriods) {
   let table = new Table({
     head: ['Period', 'Total Files', 'Total LoC'],
   });
 
-  for (let period of allPeriods) {
+  allPeriods.forEach((period, index) => {
+    let prevPeriod = allPeriods[index + 1];
     table.push([
       `${chalk.magenta(formatGitDate(period.date))} ${chalk.yellow(period.commit.slice(-8))}`,
-      String(period.results.SUM.nFiles),
-      String(period.results.SUM.code)
+      formatValue(period.results.SUM.nFiles, prevPeriod && prevPeriod.results.SUM.nFiles),
+      formatValue(period.results.SUM.code, prevPeriod && prevPeriod.results.SUM.code)
     ]);
-  }
+  });
 
   return table;
 }
@@ -142,15 +160,18 @@ function getNextDate(date /*: Date */, freq /*: number */) /*: Date */ {
 /*::
 export type Opts = {
   cwd?: string,
+  match?: string,
   start?: Date,
   end?: Date,
   freq?: number,
   clocArgs?: Array<string>,
+  branch?: string,
 };
 */
 
 async function repoGrowth(opts /*: Opts */ = {}) {
   let cwd = opts.cwd || process.cwd();
+  let match = opts.match || '.';
   let start = opts.start || await getFirstCommitDate(cwd);
   let end = opts.end || new Date();
   let freq = opts.freq || 30;
@@ -193,10 +214,15 @@ async function repoGrowth(opts /*: Opts */ = {}) {
   for (let period of periods) {
     await checkout(cwd, period.commit);
     console.log();
-    let results = await countLinesOfCode(cwd, clocArgs);
+    let results = await countLinesOfCode(cwd, clocArgs, match);
+    if (results === null) continue;
     console.log(periodToTable(results).toString());
     console.log();
-    allResults.push({ date: period.date, commit: period.commit, results });
+    allResults.push({
+      date: period.date,
+      commit: period.commit,
+      results,
+    });
   }
 
   await checkout(cwd, branch);
